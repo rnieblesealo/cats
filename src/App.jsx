@@ -154,12 +154,23 @@ function App() {
         })
 
         // put all attrs in one arr 
-        setAttributes([
+        const newAttrs = [
           name,
           lifespan,
           origin,
           ...temperament
-        ])
+        ]
+
+        // check if any are banned
+        for (const attr of newAttrs) {
+          if (bannedAttributes.includes(attr)) {
+            console.log("Found banned attribute! Not doing this cat")
+            return;
+          }
+        }
+
+        // if not, set new cat
+        setAttributes(newAttrs)
       })
       .catch((error) => {
         console.log("Something went wrong calling API: ", error)
@@ -167,7 +178,7 @@ function App() {
   }
 
   function banAttribute(attr) {
-    if (bannedAttributes.includes(attr)){
+    if (bannedAttributes.includes(attr)) {
       return;
     }
 
