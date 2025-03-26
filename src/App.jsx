@@ -1,20 +1,34 @@
 import axios from "axios"
 import { useState } from "react"
 
+import HistoryEntry from "./components/HistoryEntry"
+
 function App() {
-  const HistoryEntry = () => {
-    return (
-      <div>
-        <img
-          src="/cat.avif"
-          className="w-40 aspect-square object-cover"
-        />
-        <p>This cat</p>
-      </div>
-    )
-  }
+  /* attributes we care about:
+    * name 
+    * lifespan
+    * origin 
+    * temperament (split string)
+  */
+
+  const [name, setName] = useState("")
+  const [attributes, setAttributes] = useState([])
+  const [bannedAttributes, setBannedAttributes] = useState([])
 
   const BanListEntry = ({ attr }) => {
+    // remove from state array 
+    function unbanAttribute(attr) {
+      setBannedAttributes((prevBannedAttrs) => {
+        const prev = [...prevBannedAttrs]
+
+        // i f***ing hate javascript
+        // why is there no builtin array removal?!
+        return prev.filter((a) => {
+          return a !== attr;
+        })
+      })
+    }
+
     return (
       <button
         onClick={() => { unbanAttribute(attr) }}
@@ -22,62 +36,6 @@ function App() {
       >
         {attr}
       </button>
-    )
-  }
-
-  const AttributeListEntry = ({ attr }) => {
-    return (
-      <li key={`attr-${attr}`}>
-        <button
-          onClick={() => { banAttribute(attr) }}
-          className="bg-yellow-500 rounded-xl p-4 font-bold"
-        >
-          {attr}
-        </button>
-      </li>
-    )
-  }
-
-  const CatViewer = () => {
-    return (
-      <div>
-        <h3>Monin</h3>
-        <ul>
-          {
-            attributes.map((a) => {
-              return (
-                <AttributeListEntry
-                  key={`atrib-${a}`}
-                  attr={a}
-                />
-              )
-            })
-          }
-        </ul>
-        <img
-          src="/cat.avif"
-          className="w-60 aspect-square object-cover"
-        />
-        <button
-          onClick={newCat}
-          className="bg-gray-500 rounded-xl p-4 font-bold text-white"
-        >
-          Discover!
-        </button>
-      </div>
-    )
-  }
-
-  const CatHistory = () => {
-    return (
-      <div>
-        <h3>Who have we seen so far?</h3>
-        <div>
-          <HistoryEntry />
-          <HistoryEntry />
-          <HistoryEntry />
-        </div>
-      </div>
     )
   }
 
@@ -102,102 +60,152 @@ function App() {
     )
   }
 
-  async function getRandomCat() {
-    const headers = {
-      "Content-Type": "application/json",
-      "x-api-key": import.meta.env.VITE_CAT_API_KEY
+  const AttributeListEntry = ({ attr }) => {
+    // add to state, avoid dupes 
+    function banAttribute(attr) {
+      if (bannedAttributes.includes(attr)) {
+        return;
+      }
+
+      setBannedAttributes([
+        ...bannedAttributes,
+        attr
+      ])
     }
 
-    return axios.get("https://api.thecatapi.com/v1/images/search", {
-      params: {
-        size: "med",
-        mime_types: "jpg",
-        format: "json",
-        has_breeds: 1,
-        order: "RAND",
-        page: 0,
-        limit: 1
-      },
-      headers: headers
-    })
+    return (
+      <li key={`attr-${attr}`}>
+        <button
+          onClick={() => { banAttribute(attr) }}
+          className="bg-yellow-500 rounded-xl p-4 font-bold"
+        >
+          {attr}
+        </button>
+      </li>
+    )
   }
 
-  /* wanted attribute:
-    * name 
-    * lifespan
-    * origin 
-    * temperament (split string)
-    */
+  const CatViewer = ({ name, imgSrc }) => {
+    async function getRandomCat() {
+      const headers = {
+        "Content-Type": "application/json",
+        "x-api-key": import.meta.env.VITE_CAT_API_KEY
+      }
 
-  const [attributes, setAttributes] = useState([])
-  const [bannedAttributes, setBannedAttributes] = useState([])
+      return axios.get("https://api.thecatapi.com/v1/images/search", {
+        params: {
+          size: "med",
+          mime_types: "jpg",
+          format: "json",
+          has_breeds: 1,
+          order: "RAND",
+          page: 0,
+          limit: 1
+        },
+        headers: headers
+      })
+    }
 
-  function newCat() {
-    getRandomCat()
-      .then((result) => {
-        const data = result.data[0].breeds[0]
 
-        const name = data.name;
-        const lifespan = data.life_span;
-        const origin = data.origin;
-        const temperament = data.temperament.split(", ").map((attr) => {
-          // extract individual temperament words
-          const words = attr.split(" ")
+    async function newCat() {
+      while (true) {
+        try {
+          // try getting data
+          // needs to fully resolve, that's why we use () to ensure order of ops
+          const res = await getRandomCat()
+          const data = res.data[0].breeds[0];
 
-          // capitalize them
-          for (let i = 0; i < words.length; ++i) {
-            words[i] = words[i][0].toUpperCase() + words[i].slice(1, words[i].length).toLowerCase();
+          // compile stuff we want
+          const name = data.name;
+          const lifespan = data.life_span;
+          const origin = data.origin;
+          const temperament = data.temperament.split(", ").map((attr) => {
+            // extract individual temperament words
+            const words = attr.split(" ")
+
+            // capitalize them
+            for (let i = 0; i < words.length; ++i) {
+              words[i] = words[i][0].toUpperCase() + words[i].slice(1, words[i].length).toLowerCase();
+            }
+
+            // give back in OK format
+            return words.join(" ")
+          })
+
+          // put all attrs in one arr 
+          const newAttrs = [
+            name,
+            lifespan,
+            origin,
+            ...temperament
+          ]
+
+          // check if any are banned, get another cat if so
+          let match = false;
+          for (const attr of newAttrs) {
+            if (bannedAttributes.includes(attr)) {
+              console.log("Found banned attribute! Trying another cat...")
+              match = true;
+              break;
+            }
           }
 
-          // give back in OK format
-          return words.join(" ")
-        })
-
-        // put all attrs in one arr 
-        const newAttrs = [
-          name,
-          lifespan,
-          origin,
-          ...temperament
-        ]
-
-        // check if any are banned
-        for (const attr of newAttrs) {
-          if (bannedAttributes.includes(attr)) {
-            console.log("Found banned attribute! Not doing this cat")
-            return;
+          if (match) {
+            continue;
           }
+
+          // if not, set new cat!
+          setAttributes(newAttrs)
+
+          // ...and break!
+          return;
+        } catch (error) {
+          console.log("Something went wrong calling API: ", error)
+          return;
         }
-
-        // if not, set new cat
-        setAttributes(newAttrs)
-      })
-      .catch((error) => {
-        console.log("Something went wrong calling API: ", error)
-      })
-  }
-
-  function banAttribute(attr) {
-    if (bannedAttributes.includes(attr)) {
-      return;
+      }
     }
 
-    setBannedAttributes([
-      ...bannedAttributes,
-      attr
-    ])
+    return (
+      <div>
+        <h3>{name}</h3>
+        <ul>
+          {
+            attributes.map((a) => {
+              return (
+                <AttributeListEntry
+                  key={`atrib-${a}`}
+                  attr={a}
+                />
+              )
+            })
+          }
+        </ul>
+        <img
+          src={imgSrc}
+          className="w-60 aspect-square object-cover"
+        />
+        <button
+          onClick={newCat}
+          className="bg-gray-500 rounded-xl p-4 font-bold text-white"
+        >
+          Discover!
+        </button>
+      </div>
+    )
   }
 
-  function unbanAttribute(attr) {
-    setBannedAttributes((prevBannedAttrs) => {
-      const prev = [...prevBannedAttrs]
-
-      // i f***ing hate javascript
-      // why is there no builtin array removal?!
-      return prev.filter((a) => {
-        return a !== attr;
-      })
-    })
+  const CatHistory = () => {
+    return (
+      <div>
+        <h3>Who have we seen so far?</h3>
+        <div>
+          <HistoryEntry />
+          <HistoryEntry />
+          <HistoryEntry />
+        </div>
+      </div>
+    )
   }
 
   return (

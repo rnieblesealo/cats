@@ -1,11 +1,11 @@
-const HistoryEntry = () => {
+const HistoryEntry = ({ imgSrc, desc }) => {
   return (
     <div>
       <img
-        src="/cat.avif"
+        src={imgSrc}
         className="w-40 aspect-square object-cover"
       />
-      <p>This cat</p>
+      <p>{desc}</p>
     </div>
   )
 }
