@@ -12,8 +12,11 @@ function App() {
   */
 
   const [name, setName] = useState("")
+  const [desc, setDesc] = useState("")
+  const [imageUrl, setImageUrl] = useState("")
   const [attributes, setAttributes] = useState([])
   const [bannedAttributes, setBannedAttributes] = useState([])
+  const [history, setHistory] = useState([])
 
   const BanListEntry = ({ attr }) => {
     // remove from state array 
@@ -85,7 +88,7 @@ function App() {
     )
   }
 
-  const CatViewer = ({ name, imgSrc }) => {
+  const CatViewer = () => {
     async function getRandomCat() {
       const headers = {
         "Content-Type": "application/json",
@@ -113,13 +116,13 @@ function App() {
           // try getting data
           // needs to fully resolve, that's why we use () to ensure order of ops
           const res = await getRandomCat()
-          const data = res.data[0].breeds[0];
+          const data = res.data[0];
+          const breeds = res.data[0].breeds[0]
 
-          // compile stuff we want
-          const name = data.name;
-          const lifespan = data.life_span;
-          const origin = data.origin;
-          const temperament = data.temperament.split(", ").map((attr) => {
+          // compile attributes 
+          const lifespan = breeds.life_span;
+          const origin = breeds.origin;
+          const temperament = breeds.temperament.split(", ").map((attr) => {
             // extract individual temperament words
             const words = attr.split(" ")
 
@@ -134,7 +137,6 @@ function App() {
 
           // put all attrs in one arr 
           const newAttrs = [
-            name,
             lifespan,
             origin,
             ...temperament
@@ -156,6 +158,16 @@ function App() {
 
           // if not, set new cat!
           setAttributes(newAttrs)
+          setName(breeds.name)
+          setDesc(breeds.description)
+          setImageUrl(data.url)
+
+          // ...add to history
+          setHistory((prevHistory) => [
+            ...prevHistory,
+            [breeds.name, data.url]
+          ]
+          )
 
           // ...and break!
           return;
@@ -181,10 +193,13 @@ function App() {
             })
           }
         </ul>
-        <img
-          src={imgSrc}
-          className="w-60 aspect-square object-cover"
-        />
+        {imageUrl &&
+          <img
+            src={imageUrl}
+            className="w-60 aspect-square object-cover"
+          />
+        }
+        <p>{desc}</p>
         <button
           onClick={newCat}
           className="bg-gray-500 rounded-xl p-4 font-bold text-white"
@@ -200,9 +215,16 @@ function App() {
       <div>
         <h3>Who have we seen so far?</h3>
         <div>
-          <HistoryEntry />
-          <HistoryEntry />
-          <HistoryEntry />
+          {
+            history.map(([name, imgUrl]) => {
+              return (
+                <HistoryEntry
+                  name={name}
+                  imgSrc={imgUrl}
+                />
+              )
+            })
+          }
         </div>
       </div>
     )
