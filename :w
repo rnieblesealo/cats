@@ -3,6 +3,8 @@ import { useState } from "react"
 
 import HistoryEntry from "./components/HistoryEntry"
 
+import { FaCat } from "react-icons/fa";
+
 function App() {
   /* attributes we care about:
     * name 
@@ -11,9 +13,9 @@ function App() {
     * temperament (split string)
   */
 
-  const [name, setName] = useState("")
-  const [desc, setDesc] = useState("")
-  const [imageUrl, setImageUrl] = useState("")
+  const [name, setName] = useState(null)
+  const [desc, setDesc] = useState(null)
+  const [imageUrl, setImageUrl] = useState(null)
   const [attributes, setAttributes] = useState([])
   const [bannedAttributes, setBannedAttributes] = useState([])
   const [history, setHistory] = useState([])
@@ -80,7 +82,7 @@ function App() {
       <li key={`attr-${attr}`}>
         <button
           onClick={() => { banAttribute(attr) }}
-          className="bg-yellow-500 rounded-full py-2 px-4 font-bold text-gray-900"
+          className="bg-yellow-500 rounded-full p-2 px-3 font-bold text-sm"
         >
           {attr}
         </button>
@@ -108,6 +110,7 @@ function App() {
         headers: headers
       })
     }
+
 
     async function newCat() {
       while (true) {
@@ -178,24 +181,23 @@ function App() {
     }
 
     return (
-      <div className="w-1/2 bg-gray-900 p-4 rounded-2xl flex flex-col items-center gap-4">
-        <div className="flex flex-col items-center">
-          <h1 className="text-2xl font-extrabold">Trippin' on Cats!</h1>
-          <p>Discover cats from your wildest dreams!</p>
-        </div>
-        <div className="text-gray-900 bg-gray-300 p-4 rounded-2xl flex flex-col items-center">
-          {imageUrl &&
+      <div className="bg-gray-200 p-4 rounded-2xl m-4 flex flex-col items-center justify-center gap-2 w-min-content">
+        <h3 className="text-xl font-bold">{name ?? "Click Discover!"}</h3>
+        {imageUrl ?
+          (
             <img
               src={imageUrl}
-              className="w-60 aspect-square object-cover rounded-lg"
+              className="w-80 aspect-square object-cover rounded-lg"
             />
-          }
-          <h3 className="text-xl font-bold mt-4">{name}</h3>
-        </div>
-        <p className="text-center text-gray-400">{desc}</p>
-        <ul className="flex flex-wrap justify-center gap-1">
-          {
-            attributes.map((a) => {
+          ) : (
+            <div className="w-80 aspect-square bg-gray-300 rounded-lg flex items-center justify-center">
+              <FaCat className="text-4xl text-gray-400" />
+            </div>
+          )
+        }
+        {attributes &&
+          <ul className="flex flex-wrap justify-center gap-1 max-w-80">
+            {attributes.map((a) => {
               return (
                 <AttributeListEntry
                   key={`atrib-${a}`}
@@ -203,11 +205,15 @@ function App() {
                 />
               )
             })
-          }
-        </ul>
+            }
+          </ul>
+        }
+        {desc &&
+          <p className="text-md text-center max-w-80">{desc}</p>
+        }
         <button
           onClick={newCat}
-          className="bg-blue-500 rounded-xl p-4 font-bold text-white"
+          className="bg-gray-500 rounded-xl p-4 font-bold text-white"
         >
           Discover!
         </button>
@@ -236,10 +242,14 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen w-screen flex flex-col items-center bg-gray-700 text-white">
-      <CatViewer />
-      <CatHistory />
-      <BanList />
+    <div className="flex flex-col items-center justify-center">
+      <h1 className="text-4xl font-extrabold">Trippin' on Cats!</h1>
+      <p>Discover cats from your wildest dreams!</p>
+      <div className="flex flex-row">
+        <CatViewer />
+        <CatHistory />
+        <BanList />
+      </div>
     </div >
   )
 }
