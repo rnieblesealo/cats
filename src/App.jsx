@@ -2,7 +2,8 @@ import axios from "axios"
 import { useState } from "react"
 
 import BanList from "./components/BanList.jsx"
-import HistoryEntry from "./components/HistoryEntry.jsx"
+import AttributeList from "./components/AttributeList.jsx"
+import CatHistory from "./components/CatHistory.jsx"
 
 import { FaCat } from "react-icons/fa6"
 
@@ -20,32 +21,6 @@ function App() {
   const [attributes, setAttributes] = useState([])
   const [bannedAttributes, setBannedAttributes] = useState([])
   const [history, setHistory] = useState([])
-
-
-  const AttributeListEntry = ({ attr }) => {
-    // add to state, avoid dupes 
-    function banAttribute(attr) {
-      if (bannedAttributes.includes(attr)) {
-        return;
-      }
-
-      setBannedAttributes([
-        ...bannedAttributes,
-        attr
-      ])
-    }
-
-    return (
-      <li key={`attr-${attr}`}>
-        <button
-          onClick={() => { banAttribute(attr) }}
-          className="bg-amber-400 text-black rounded-lg py-2 px-4 font-bold text-gray-900"
-        >
-          {attr}
-        </button>
-      </li>
-    )
-  }
 
   const CatViewer = () => {
     async function getRandomCat() {
@@ -156,24 +131,14 @@ function App() {
             <h3 className="text-xl font-bold p-1 mb-3">{name}</h3>
           )}
         </div>
+        <AttributeList
+          attributes={attributes}
+          bannedAttributes={bannedAttributes}
+          setBannedAttributes={setBannedAttributes}
+        />
         {desc && (
           <p className="text-center text-gray-300">{desc}</p>
         )}
-        {attributes.length > 0 && (
-          <ul className="flex flex-wrap justify-center gap-1">
-            {
-              attributes.map((a) => {
-                return (
-                  <AttributeListEntry
-                    key={`atrib-${a}`}
-                    attr={a}
-                  />
-                )
-              })
-            }
-          </ul>
-        )
-        }
         <button
           onClick={newCat}
           className="bg-blue-500 rounded-xl p-4 font-bold text-white"
@@ -184,32 +149,12 @@ function App() {
     )
   }
 
-  const CatHistory = () => {
-    return (
-      <div className="absolute left-0 m-4 p-4 bg-black rounded-2xl flex flex-col items-center text-center max-w-50 shadow-2xl">
-        <h3 className="text-white font-extrabold text-xl mb-3">View History</h3>
-        <div className="flex flex-col items-center gap-3">
-          {history.length === 0 ? (
-            <p className="text-gray-300">Discovered cats will appear here!</p>
-          ) : (
-            history.map(([name, imgUrl]) => {
-              return (
-                <HistoryEntry
-                  name={name}
-                  imgSrc={imgUrl}
-                />
-              )
-            }))
-          }
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="min-h-screen w-screen flex flex-col items-center bg-yellow-500 text-black text-center">
       <CatViewer />
-      <CatHistory />
+      <CatHistory
+        history={history}
+      />
       <BanList
         bannedAttrs={bannedAttributes}
         setBannedAttributes={setBannedAttributes}
