@@ -1,7 +1,10 @@
 import axios from "axios"
 import { useState } from "react"
 
-import HistoryEntry from "./components/HistoryEntry"
+import BanList from "./components/BanList.jsx"
+import HistoryEntry from "./components/HistoryEntry.jsx"
+
+import { FaCat } from "react-icons/fa6"
 
 function App() {
   /* attributes we care about:
@@ -18,50 +21,6 @@ function App() {
   const [bannedAttributes, setBannedAttributes] = useState([])
   const [history, setHistory] = useState([])
 
-  const BanListEntry = ({ attr }) => {
-    // remove from state array 
-    function unbanAttribute(attr) {
-      setBannedAttributes((prevBannedAttrs) => {
-        const prev = [...prevBannedAttrs]
-
-        // i f***ing hate javascript
-        // why is there no builtin array removal?!
-        return prev.filter((a) => {
-          return a !== attr;
-        })
-      })
-    }
-
-    return (
-      <button
-        onClick={() => { unbanAttribute(attr) }}
-        className="bg-red-500 rounded-xl p-4 font-bold text-white"
-      >
-        {attr}
-      </button>
-    )
-  }
-
-  const BanList = () => {
-    return (
-      <div>
-        <h3>Ban List</h3>
-        <p>Select an attribute in your listing to ban it</p>
-        <div>
-          {
-            bannedAttributes.map((a) => {
-              return (
-                <BanListEntry
-                  key={`atrib-${a}`}
-                  attr={a}
-                />
-              )
-            })
-          }
-        </div>
-      </div>
-    )
-  }
 
   const AttributeListEntry = ({ attr }) => {
     // add to state, avoid dupes 
@@ -80,7 +39,7 @@ function App() {
       <li key={`attr-${attr}`}>
         <button
           onClick={() => { banAttribute(attr) }}
-          className="bg-yellow-500 rounded-full py-2 px-4 font-bold text-gray-900"
+          className="bg-amber-400 text-black rounded-lg py-2 px-4 font-bold text-gray-900"
         >
           {attr}
         </button>
@@ -165,8 +124,7 @@ function App() {
           setHistory((prevHistory) => [
             ...prevHistory,
             [breeds.name, data.url]
-          ]
-          )
+          ])
 
           // ...and break!
           return;
@@ -178,33 +136,44 @@ function App() {
     }
 
     return (
-      <div className="w-1/2 bg-gray-900 p-4 rounded-2xl flex flex-col items-center gap-4">
-        <div className="flex flex-col items-center">
-          <h1 className="text-2xl font-extrabold">Trippin' on Cats!</h1>
-          <p>Discover cats from your wildest dreams!</p>
+      <div className="max-w-1/3 bg-black shadow-2xl p-4 rounded-2xl flex flex-col items-center gap-4 text-white m-4 overflow-hidden">
+        <div className="flex flex-col items-center m-2">
+          <h1 className="text-2xl font-extrabold">Find-A-Cat!</h1>
+          <p className="text-gray-300">Discover wild new cats!</p>
         </div>
-        <div className="text-gray-900 bg-gray-300 p-4 rounded-2xl flex flex-col items-center">
-          {imageUrl &&
+        <div className="rounded-2xl flex flex-col items-center bg-white text-black animate-flip-up animate-duration-[400ms]">
+          {imageUrl ? (
             <img
               src={imageUrl}
-              className="w-60 aspect-square object-cover rounded-lg"
-            />
+              className="p-3 w-60 aspect-square object-cover rounded-2xl"
+            />) : (
+            <div className="w-60 aspect-square rounded-2xl bg-gray-400 flex items-center justify-center">
+              <FaCat className="text-gray-900 text-4xl" />
+            </div>
+          )
           }
-          <h3 className="text-xl font-bold mt-4">{name}</h3>
+          {name && (
+            <h3 className="text-xl font-bold p-1 mb-3">{name}</h3>
+          )}
         </div>
-        <p className="text-center text-gray-400">{desc}</p>
-        <ul className="flex flex-wrap justify-center gap-1">
-          {
-            attributes.map((a) => {
-              return (
-                <AttributeListEntry
-                  key={`atrib-${a}`}
-                  attr={a}
-                />
-              )
-            })
-          }
-        </ul>
+        {desc && (
+          <p className="text-center text-gray-300">{desc}</p>
+        )}
+        {attributes.length > 0 && (
+          <ul className="flex flex-wrap justify-center gap-1">
+            {
+              attributes.map((a) => {
+                return (
+                  <AttributeListEntry
+                    key={`atrib-${a}`}
+                    attr={a}
+                  />
+                )
+              })
+            }
+          </ul>
+        )
+        }
         <button
           onClick={newCat}
           className="bg-blue-500 rounded-xl p-4 font-bold text-white"
@@ -217,10 +186,12 @@ function App() {
 
   const CatHistory = () => {
     return (
-      <div>
-        <h3>Who have we seen so far?</h3>
-        <div>
-          {
+      <div className="absolute left-0 m-4 p-4 bg-black rounded-2xl flex flex-col items-center text-center max-w-50 shadow-2xl">
+        <h3 className="text-white font-extrabold text-xl mb-3">View History</h3>
+        <div className="flex flex-col items-center gap-3">
+          {history.length === 0 ? (
+            <p className="text-gray-300">Discovered cats will appear here!</p>
+          ) : (
             history.map(([name, imgUrl]) => {
               return (
                 <HistoryEntry
@@ -228,7 +199,7 @@ function App() {
                   imgSrc={imgUrl}
                 />
               )
-            })
+            }))
           }
         </div>
       </div>
@@ -236,10 +207,13 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen w-screen flex flex-col items-center bg-gray-700 text-white">
+    <div className="min-h-screen w-screen flex flex-col items-center bg-yellow-500 text-black text-center">
       <CatViewer />
       <CatHistory />
-      <BanList />
+      <BanList
+        bannedAttrs={bannedAttributes}
+        setBannedAttributes={setBannedAttributes}
+      />
     </div >
   )
 }
