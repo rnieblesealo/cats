@@ -1,8 +1,14 @@
-export const BanList = ({ bannedAttrs, setBannedAttributes }) => {
+import { useMemo } from "react"
+
+import UseAPIContext from "../apiContext"
+
+export const BanList = () => {
+  const ctx = UseAPIContext()
+
   const BanListEntry = ({ attr }) => {
     // remove from state array 
     function unbanAttribute(attr) {
-      setBannedAttributes((prevBannedAttrs) => {
+      ctx.setBannedAttributes((prevBannedAttrs) => {
         const prev = [...prevBannedAttrs]
 
         // i f***ing hate javascript
@@ -26,28 +32,25 @@ export const BanList = ({ bannedAttrs, setBannedAttributes }) => {
     )
   }
 
+  const bannedAttributes = useMemo(() => {
+    return ctx.bannedAttributes.map((a) => {
+      return (
+        <BanListEntry
+          key={`atrib-${a}`}
+          attr={a}
+        />
+      )
+    })
+  }, [ctx.bannedAttributes])
+
+  const bannedAttributesPlaceholder = <p className="text-gray-300">Select an attribute in your listing to ban it; click it again to unban it</p>
+
   return (
-    <div className="absolute right-0 m-4 p-4 bg-black rounded-2xl flex flex-col items-center text-center max-w-50 shadow-2xl text-white">
+    <div className="h-min right-0 m-4 p-4 bg-black rounded-2xl flex flex-col items-center text-center w-50 min-w-50 shadow-2xl text-white">
       <h3 className="font-extrabold text-xl mb-3">Banned Attributes</h3>
-      {
-        bannedAttrs.length === 0 ? (
-          <p className="text-gray-300">Select an attribute in your listing to ban it; click it again to unban it</p>
-        ) : (
-          <div className="flex flex-col gap-1 w-full">
-            {
-              bannedAttrs.map((a) => {
-                return (
-                  <BanListEntry
-                    key={`atrib-${a}`}
-                    attr={a}
-                    setBannedAttributes={setBannedAttributes}
-                  />
-                )
-              })
-            }
-          </div>
-        )
-      }
+      <div className="flex flex-col gap-1 w-full">
+        {ctx.bannedAttributes.length === 0 ? bannedAttributesPlaceholder : bannedAttributes}
+      </div>
     </div>
   )
 }

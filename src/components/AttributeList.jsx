@@ -1,13 +1,17 @@
-const AttributeList = ({ attributes, bannedAttributes, setBannedAttributes }) => {
+import UseAPIContext from "../apiContext"
+
+const AttributeList = () => {
+  const ctx = UseAPIContext()
+
   const AttributeListEntry = ({ attr }) => {
     // add to state, avoid dupes 
     function banAttribute(attr) {
-      if (bannedAttributes.includes(attr)) {
+      if (ctx.bannedAttributes.includes(attr)) {
         return;
       }
 
-      setBannedAttributes([
-        ...bannedAttributes,
+      ctx.setBannedAttributes([
+        ...ctx.bannedAttributes,
         attr
       ])
     }
@@ -27,18 +31,18 @@ const AttributeList = ({ attributes, bannedAttributes, setBannedAttributes }) =>
     )
   }
 
-  return attributes.length > 0 && (
+  const attributeList = ctx.attributes.map((a) => {
+    return (
+      <AttributeListEntry
+        key={`atrib-${a}`}
+        attr={a}
+      />
+    )
+  })
+
+  return (
     <ul className="flex flex-wrap justify-center gap-1">
-      {
-        attributes.map((a) => {
-          return (
-            <AttributeListEntry
-              key={`atrib-${a}`}
-              attr={a}
-            />
-          )
-        })
-      }
+      {ctx.attributes.length > 0 && attributeList}
     </ul>
   )
 }
