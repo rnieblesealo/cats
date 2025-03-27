@@ -141,7 +141,10 @@ function App() {
         )}
         <button
           onClick={newCat}
-          className="bg-blue-500 rounded-xl p-4 font-bold text-white"
+          className="
+          bg-blue-500 rounded-xl p-4 font-bold text-white transition-bg duration-200
+          hover:bg-blue-600
+          active:bg-blue-700"
         >
           Discover!
         </button>

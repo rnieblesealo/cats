@@ -16,7 +16,10 @@ export const BanList = ({ bannedAttrs, setBannedAttributes }) => {
     return (
       <button
         onClick={() => { unbanAttribute(attr) }}
-        className="bg-rose-600 rounded-lg p-2 font-bold text-white w-full animate-jump-in animate-duration-200"
+        className="
+        bg-rose-600 rounded-lg p-2 font-bold text-white w-full animate-jump-in animate-duration-200 transition-bg duration-200 
+        hover:bg-rose-700
+        active:bg-rose-800"
       >
         {attr}
       </button>
