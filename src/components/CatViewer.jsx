@@ -34,6 +34,7 @@ const CatViewer = () => {
         // try getting data
         // needs to fully resolve, that's why we use () to ensure order of ops
         const res = await getRandomCat()
+
         const data = res.data[0];
         const breeds = res.data[0].breeds[0]
 

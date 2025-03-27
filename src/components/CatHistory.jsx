@@ -27,6 +27,7 @@ const CatHistory = () => {
     return ctx.history.map(([name, imgUrl]) => {
       return (
         <HistoryEntry
+          key={`img-${imgUrl}`}
           name={name}
           imgSrc={imgUrl}
         />
